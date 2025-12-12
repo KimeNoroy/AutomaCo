@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        schema::create('activation_codes', function (Blueprint $table) {
+        Schema::create('activation_codes', function (Blueprint $table) {
          $table->id();
          $table->string('code_hash')->unique();
-         $table->string('is_used')->default(false);
-         $table->timestamp('used_at')->nulllable();
+         $table->boolean('is_used')->default(false);
+         $table->timestamp('used_at')->nullable();
 
          //relacion con la table users
          $table->foreignId('user_id')->constrained('users')->onDelete('cascade');

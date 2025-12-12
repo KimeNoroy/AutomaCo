@@ -16,7 +16,15 @@ Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name(
 
 Route::middleware('auth:sanctum')->group(function () {
     
-    Route::post('/logout', [AuthController::class, 'logout']);
+    // Ruta para activar cuenta (no requiere cuenta activada)
+    Route::post('/activate', [AuthController::class, 'activate'])->name("activate");
     
+    // Rutas que requieren cuenta activada
+    Route::middleware('account.active')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout']);
+        
+        // Aquí irán las rutas de descarga de DTE cuando las implemente
+      
+    });
     
 });

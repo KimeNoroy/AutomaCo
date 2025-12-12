@@ -7,7 +7,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
-use Illuminate\Testing\Fluent\Concerns\Has;
+use App\Models\ActivationCode;
+use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
@@ -48,9 +49,18 @@ class AuthController extends Controller
             'email' => 'required|email',
             'password' => 'required'
         ]);
+
         //Intentar autenticar al usuario
         if (Auth::attempt($credential)) {
             $user = User::where('email', $request->email)->first();
+
+            //Verificar si la cuenta está activada
+            if (!$user->is_active) {
+                return response()->json([
+                    'message' => 'Su cuenta no está activada. Por favor, active su cuenta con un código de activación.',
+                    'error' => 'account_not_activated'
+                ], 403);
+            }
 
             //Eliminar todos los tokens anteriores
             $user->tokens()->delete();
@@ -64,9 +74,9 @@ class AuthController extends Controller
                 'access_token' => $token,
                 'token_type' => 'Bearer',
                 'user' => [
-                    $id = $user->id,
-                    $name = $user->name,
-                    $email = $user->email
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email
                 ]
             ], 200);
         }
@@ -83,6 +93,58 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Cierre de sesión exitoso'
+        ], 200);
+    }
+
+    public function activate(Request $request)
+    {
+        //Validar el código de activación
+        $request->validate([
+            'code' => 'required|string',
+        ]);
+
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'No autenticado'
+            ], 401);
+        }
+
+        //Si ya está activado, no hacer nada
+        if ($user->is_active) {
+            return response()->json([
+                'message' => 'Su cuenta ya está activada'
+            ], 200);
+        }
+
+        //Buscar el código de activación
+        $codeHash = hash('sha256', $request->code);
+        $activationCode = ActivationCode::where('code_hash', $codeHash)
+            ->where('user_id', $user->id)
+            ->where('is_used', false)
+            ->first();
+
+        //Si el código de activación no existe o ya fue utilizado, retornar un error
+        if (!$activationCode) {
+            return response()->json([
+                'message' => 'Código de activación inválido o ya utilizado'
+            ], 400);
+        }
+
+        //Activar la cuenta y marcar el código como usado
+        DB::transaction(function () use ($user, $activationCode) {
+            $user->is_active = true;
+            $user->save();
+
+            $activationCode->is_used = true;
+            $activationCode->used_at = now();
+            $activationCode->save();
+        });
+
+        return response()->json([
+            'message' => 'Cuenta activada exitosamente',
+            'user' => $user->fresh()
         ], 200);
     }
 }
