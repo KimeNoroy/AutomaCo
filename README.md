@@ -1,3 +1,76 @@
+## 🚀 Configuración y ejecución del proyecto
+
+Sigue los pasos a continuación para configurar y ejecutar la API en un entorno local.
+
+### 1️⃣ Limpiar la caché de configuración
+
+```bash
+php artisan config:clear
+```
+
+Elimina la caché de configuración de Laravel para asegurar que los valores definidos en el archivo `.env` y en los archivos de configuración sean cargados correctamente.
+
+---
+
+### 2️⃣ Generar la clave de la aplicación
+
+```bash
+php artisan key:generate
+```
+
+Genera una nueva clave de aplicación (`APP_KEY`) y la asigna automáticamente en el archivo `.env`.
+Esta clave es esencial para garantizar la seguridad de la aplicación, ya que se utiliza en procesos de encriptación, sesiones y generación de tokens.
+
+---
+
+### 3️⃣ Optimizar la aplicación
+
+```bash
+php artisan optimize
+```
+
+Optimiza el rendimiento de la aplicación mediante la creación de caché para la configuración, rutas y archivos del framework.
+Este paso mejora la eficiencia general del sistema.
+
+---
+
+### 4️⃣ Limpiar nuevamente la caché de configuración
+
+```bash
+php artisan config:clear
+```
+
+Se recomienda ejecutar este comando nuevamente para evitar conflictos entre la configuración optimizada y los cambios recientes del entorno.
+
+---
+
+### 5️⃣ Ejecutar las migraciones de la base de datos
+
+```bash
+php artisan migrate
+```
+
+Ejecuta las migraciones definidas en el proyecto, creando y actualizando la estructura de la base de datos según los archivos de migración.
+Asegúrate de que las credenciales de la base de datos estén correctamente configuradas en el archivo `.env`.
+
+---
+
+### 6️⃣ Iniciar el servidor de desarrollo
+
+```bash
+php artisan serve
+```
+
+Inicia el servidor de desarrollo de Laravel.
+Una vez ejecutado, la API estará disponible por defecto en la siguiente URL:
+
+```
+http://127.0.0.1:8000
+```
+
+---
+
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
