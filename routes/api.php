@@ -23,6 +23,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('account.active')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         
+        // Rutas de proveedores de email
+        Route::get('/providers', [AuthController::class, 'getProviders'])->name('providers.list');
+        Route::post('/select-provider', [AuthController::class, 'selectProvider'])->name('providers.select');
+        
         // Aquí irán las rutas de descarga de DTE cuando las implemente
       
     });

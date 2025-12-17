@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\ActivationCode;
+use App\Models\EmailProvider;
+use App\Services\N8nService;
 use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
@@ -145,6 +147,61 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Cuenta activada exitosamente',
             'user' => $user->fresh()
+        ], 200);
+    }
+
+    /**
+     * Obtener lista de proveedores de email disponibles
+     */
+    public function getProviders()
+    {
+        $providers = EmailProvider::select('id', 'name', 'display_name', 'identifier')->get();
+
+        return response()->json([
+            'providers' => $providers
+        ], 200);
+    }
+
+    /**
+     * Seleccionar proveedor de email para el usuario
+     */
+    public function selectProvider(Request $request, N8nService $n8nService)
+    {
+        $request->validate([
+            'provider_id' => 'required|exists:email_providers,id',
+        ]);
+
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'No autenticado'
+            ], 401);
+        }
+
+        // Obtener el proveedor seleccionado
+        $provider = EmailProvider::findOrFail($request->provider_id);
+
+        // Actualizar el proveedor del usuario
+        $user->email_provider_id = $provider->id;
+        $user->save();
+
+        // Enviar identificador a n8n
+        $n8nService->sendProviderIdentifier(
+            $user->id,
+            $provider->identifier,
+            $user->email
+        );
+
+        return response()->json([
+            'message' => 'Proveedor de email seleccionado exitosamente',
+            'provider' => [
+                'id' => $provider->id,
+                'name' => $provider->name,
+                'display_name' => $provider->display_name,
+                'identifier' => $provider->identifier,
+            ],
+            'user' => $user->fresh()->load('emailProvider')
         ], 200);
     }
 }
