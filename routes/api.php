@@ -3,32 +3,38 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\SocialAuthController;
 
 /*Rutas Públicas (Cualquiera puede entrar)*/
 
-Route::post("/register", [AuthController::class,"register"])->name("register");
+Route::post("/register", [AuthController::class, "register"])->name("register");
 Route::post('/login', [AuthController::class, 'login'])->name("login");
 Route::post('/send-reset-link', [PasswordResetController::class, 'sendResetLink'])->name("send-reset-link");
 Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name("reset-password");
 
 
+//PARA LA AUTH
+Route::get('/auth/{driver}/callback', [SocialAuthController::class, 'handleCallback']);
+
 /*Rutas Protegidas (Necesitan estar autenticado)*/
 
 Route::middleware('auth:sanctum')->group(function () {
-    
+
     // Ruta para activar cuenta (no requiere cuenta activada)
     Route::post('/activate', [AuthController::class, 'activate'])->name("activate");
-    
+
     // Rutas que requieren cuenta activada
     Route::middleware('account.active')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
-        
+
         // Rutas de proveedores de email
         Route::get('/providers', [AuthController::class, 'getProviders'])->name('providers.list');
         Route::post('/select-provider', [AuthController::class, 'selectProvider'])->name('providers.select');
-        
+
+        //AUTH
+        Route::get('/auth/social/redirect', [SocialAuthController::class, 'getRedirectUrl']);
+
         // Aquí irán las rutas de descarga de DTE cuando las implemente
-      
+
     });
-    
 });

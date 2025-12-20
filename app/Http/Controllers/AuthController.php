@@ -162,46 +162,6 @@ class AuthController extends Controller
         ], 200);
     }
 
-    /**
-     * Seleccionar proveedor de email para el usuario
-     */
-    public function selectProvider(Request $request, N8nService $n8nService)
-    {
-        $request->validate([
-            'provider_id' => 'required|exists:email_providers,id',
-        ]);
-
-        $user = $request->user();
-
-        if (!$user) {
-            return response()->json([
-                'message' => 'No autenticado'
-            ], 401);
-        }
-
-        // Obtener el proveedor seleccionado
-        $provider = EmailProvider::findOrFail($request->provider_id);
-
-        // Actualizar el proveedor del usuario
-        $user->email_provider_id = $provider->id;
-        $user->save();
-
-        // Enviar identificador a n8n
-        $n8nService->sendProviderIdentifier(
-            $user->id,
-            $provider->identifier,
-            $user->email
-        );
-
-        return response()->json([
-            'message' => 'Proveedor de email seleccionado exitosamente',
-            'provider' => [
-                'id' => $provider->id,
-                'name' => $provider->name,
-                'display_name' => $provider->display_name,
-                'identifier' => $provider->identifier,
-            ],
-            'user' => $user->fresh()->load('emailProvider')
-        ], 200);
-    }
+    // ELIMINADO: public function selectProvider(...) 
+    // Motivo: La vinculación ahora se maneja vía OAuth en SocialAuthController
 }

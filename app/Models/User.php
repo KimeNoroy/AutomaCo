@@ -23,7 +23,6 @@ class User extends Authenticatable
         'email',
         'password',
         'is_active',
-        'email_provider_id',
     ];
 
     /**
@@ -56,13 +55,5 @@ class User extends Authenticatable
     public function activationCodes()
     {
         return $this->hasMany(ActivationCode::class);
-    }
-
-    /**
-     * Relación con proveedor de email
-     */
-    public function emailProvider()
-    {
-        return $this->belongsTo(EmailProvider::class);
     }
 }
