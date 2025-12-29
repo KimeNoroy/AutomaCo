@@ -22,13 +22,15 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8', 
+            'is_active' => 'required|boolean',
             'role' => 'required|in:admin,client',
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password), // Encriptamos la contraseña
+            'password' => Hash::make($request->password),
+            'is_active' => $request->is_active,
             'role' => $request->role,
         ]);
 
@@ -44,12 +46,14 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
             'role' => 'required|in:admin,client', // Validar que el rol sea correcto
+            'is_active' => 'required|boolean',
         ]);
 
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
             'role' => $request->role,
+            'is_active' => $request->is_active,
         ]);
         
         // Si envían password, lo actualizamos aparte
